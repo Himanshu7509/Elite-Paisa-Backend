@@ -1,5 +1,6 @@
 import Auth from '../models/auth.model.js';
 import resend from '../config/email.js';
+import bcrypt from 'bcryptjs';
 
 // Forgot password - send OTP
 const forgotPassword = async (req, res) => {
@@ -29,10 +30,14 @@ const forgotPassword = async (req, res) => {
     // Set OTP expiration time (5 minutes from now)
     const otpExpires = Date.now() + 5 * 60 * 1000;
 
-    // Save OTP and expiration to user document
-    user.resetPasswordToken = otp;
-    user.resetPasswordExpires = otpExpires;
-    await user.save();
+    console.log('Generated OTP for', email, ':', otp);
+    console.log('OTP Expires at:', new Date(otpExpires));
+
+    // Save OTP and expiration to user document without triggering password hash
+    await Auth.findByIdAndUpdate(user._id, {
+      resetPasswordToken: otp,
+      resetPasswordExpires: otpExpires
+    }, { new: true });
 
     // Send OTP via email using Resend with enhanced template
     try {
@@ -154,6 +159,23 @@ const verifyOTP = async (req, res) => {
       });
     }
 
+    // Debug logging
+    console.log('=== OTP VERIFICATION DEBUG ===');
+    console.log('Email:', email);
+    console.log('Provided OTP:', otp);
+    console.log('Stored OTP from initial query:', user.resetPasswordToken);
+    console.log('OTP Expires:', user.resetPasswordExpires);
+    console.log('Current Time:', Date.now());
+    console.log('Is Expired:', user.resetPasswordExpires < Date.now());
+    
+    // Fetch user again to ensure we have latest data
+    const freshUser = await Auth.findOne({ email });
+    console.log('Fresh user data:');
+    console.log('- Reset Token:', freshUser.resetPasswordToken);
+    console.log('- Reset Expires:', freshUser.resetPasswordExpires);
+    console.log('- Match Result:', freshUser.resetPasswordToken === otp);
+    console.log('===============================');
+
     // Check if OTP is valid and not expired
     if (user.resetPasswordToken !== otp) {
       return res.status(400).json({
@@ -236,11 +258,15 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    // Update password
-    user.password = newPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
+    // Update password and clear reset tokens
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    
+    await Auth.findByIdAndUpdate(user._id, {
+      password: hashedPassword,
+      resetPasswordToken: undefined,
+      resetPasswordExpires: undefined
+    }, { new: true });
 
     res.status(200).json({
       success: true,
@@ -284,10 +310,11 @@ const resendOTP = async (req, res) => {
     // Set OTP expiration time (5 minutes from now)
     const otpExpires = Date.now() + 5 * 60 * 1000;
 
-    // Save OTP and expiration to user document
-    user.resetPasswordToken = otp;
-    user.resetPasswordExpires = otpExpires;
-    await user.save();
+    // Save OTP and expiration to user document without triggering password hash
+    await Auth.findByIdAndUpdate(user._id, {
+      resetPasswordToken: otp,
+      resetPasswordExpires: otpExpires
+    }, { new: true });
 
     // Send OTP via email using Resend
     try {

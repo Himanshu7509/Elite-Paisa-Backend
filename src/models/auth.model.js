@@ -31,6 +31,12 @@ const authSchema = new mongoose.Schema({
     type: String,
     enum: ['admin', 'client'],
     default: 'client'
+  },
+  resetPasswordToken: {
+    type: String
+  },
+  resetPasswordExpires: {
+    type: Date
   }
 }, {
   timestamps: true
@@ -39,11 +45,16 @@ const authSchema = new mongoose.Schema({
 // Encrypt password using bcrypt before saving
 authSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
-    next();
+    return next();
   }
 
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 const Auth = mongoose.model("Auth", authSchema);
