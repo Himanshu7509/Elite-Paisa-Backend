@@ -72,7 +72,13 @@ export const signup = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(error);
+    console.error('=== SIGNUP ERROR DEBUG ===');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Full error object:', error);
+    console.error('==========================');
+    
     res.status(500).json({
       success: false,
       message: "Server Error",
@@ -170,7 +176,3 @@ export const login = async (req, res) => {
   }
 };
 
-// Method to add to Auth model prototype to compare passwords
-Auth.prototype.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};

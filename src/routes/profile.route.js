@@ -1,10 +1,10 @@
 import express from "express";
 const router = express.Router();
 
-import { createOrUpdateProfile, getProfile, getAllProfiles, getUserProfileById, uploadProfilePic, upload } from "../controllers/profile.controller.js";
+import { createOrUpdateProfile, getProfile, getAllProfiles, getUserProfileById, updateProfile, deleteProfile, uploadProfilePic, upload } from "../controllers/profile.controller.js";
 import { protect, adminOnly } from "../middleware/auth.middleware.js";
 
-router.route("/").post(protect, createOrUpdateProfile).get(protect, getProfile);
+router.route("/").post(protect, createOrUpdateProfile).get(protect, getProfile).put(protect, updateProfile).delete(protect, deleteProfile);
 
 // Profile picture upload route
 router.route("/upload/profile-pic").post(protect, upload.single('profilePic'), uploadProfilePic);

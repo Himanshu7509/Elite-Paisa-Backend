@@ -68,10 +68,29 @@ A comprehensive backend API for financial management with authentication, profil
 
 ## Profile Management
 
-### Create or Update Profile
+### Create Profile
 - **URL**: `POST /api/profile`
 - **Headers**: `Authorization: Bearer <token>`
-- **Description**: Create a new profile or update existing one
+- **Description**: Create a new profile
+
+### Update Profile
+- **URL**: `PUT /api/profile`
+- **Headers**: `Authorization: Bearer <token>`
+- **Description**: Update existing profile
+- **Request Body**: Same as Create Profile
+- **Response**: Same as Create Profile
+
+### Delete Profile
+- **URL**: `DELETE /api/profile`
+- **Headers**: `Authorization: Bearer <token>`
+- **Description**: Delete user profile and associated profile picture from S3
+- **Response**:
+```json
+{
+  "success": true,
+  "message": "Profile deleted successfully"
+}
+```
 - **Request Body**:
 ```json
 {

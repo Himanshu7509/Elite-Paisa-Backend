@@ -236,6 +236,115 @@ export const getUserProfileById = async (req, res) => {
   }
 };
 
+// @desc    Update user profile
+// @route   PUT /api/profile
+// @access  Private
+export const updateProfile = async (req, res) => {
+  try {
+    const {
+      fullName,
+      panNo,
+      adharNo,
+      pincode,
+      phoneNo,
+      phoneNo2,
+      email,
+      address,
+      age,
+      bankDetails,
+      profilePic
+    } = req.body;
+
+    // Check if profile exists for this user
+    const profile = await Profile.findOne({ authId: req.user.id });
+    
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Profile not found"
+      });
+    }
+
+    // Prepare update data
+    const updateData = { 
+      fullName,
+      panNo,
+      adharNo,
+      pincode,
+      phoneNo,
+      phoneNo2,
+      email,
+      address,
+      age,
+      bankDetails
+    };
+    
+    // Add profilePic if provided
+    if (profilePic) {
+      updateData.profilePic = profilePic;
+    }
+    
+    const updatedProfile = await Profile.findOneAndUpdate(
+      { authId: req.user.id },
+      updateData,
+      {
+        new: true,
+        runValidators: true
+      }
+    ).populate('authId', 'fullName email phoneNo role');
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      profile: updatedProfile,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Delete user profile
+// @route   DELETE /api/profile
+// @access  Private
+export const deleteProfile = async (req, res) => {
+  try {
+    // Check if profile exists for this user
+    const profile = await Profile.findOne({ authId: req.user.id });
+    
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Profile not found"
+      });
+    }
+
+    // Delete profile picture from S3 if it exists
+    if (profile.profilePic) {
+      await deleteImageFromS3(profile.profilePic);
+    }
+
+    // Delete the profile from database
+    await Profile.findOneAndDelete({ authId: req.user.id });
+
+    res.status(200).json({
+      success: true,
+      message: "Profile deleted successfully"
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
 // @desc    Upload profile picture
 // @route   POST /api/profile/upload/profile-pic
 // @access  Private
