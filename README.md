@@ -83,6 +83,27 @@ AWS_BUCKET_NAME=your-s3-bucket-name
 | POST | `/api/auth/forgot-password` | Request password reset |
 | POST | `/api/auth/reset-password/:resetToken` | Reset password |
 
+#### Signup/Register Body Structure
+
+```json
+{
+  "fullName": "John Doe",
+  "email": "john.doe@example.com",
+  "phoneNo": "9876543210",
+  "password": "SecurePassword123!",
+  "role": "client"
+}
+```
+
+#### Login Body Structure
+
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!"
+}
+```
+
 ### Profile Management
 
 | Method | Endpoint | Description | Access |
