@@ -1,379 +1,350 @@
-# Elite Paisa Backend API
+# Elite Paisa Backend
 
-A comprehensive backend API for financial management with authentication, profile management, and user features.
+Elite Paisa is a comprehensive loan management system that enables clients to apply for various types of loans and allows administrators to manage loan products and applications.
 
 ## Table of Contents
-- [Authentication](#authentication)
-- [Profile Management](#profile-management)
-- [Password Reset](#password-reset)
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Installation](#installation)
 - [Environment Variables](#environment-variables)
-- [Error Handling](#error-handling)
+- [API Endpoints](#api-endpoints)
+  - [Authentication](#authentication)
+  - [Profile Management](#profile-management)
+  - [Loan Types](#loan-types)
+  - [Loan Applications](#loan-applications)
+  - [Document Upload](#document-upload)
+- [API Usage Examples](#api-usage-examples)
+- [License](#license)
 
-## Authentication
+## Features
 
-### Signup
-- **URL**: `POST /api/auth/signup`
-- **Description**: Register a new user
-- **Request Body**:
-```json
-{
-  "fullName": "John Doe",
-  "email": "john@example.com",
-  "phoneNo": "1234567890",
-  "password": "password123",
-  "role": "client"
-}
-```
-- **Response**:
-```json
-{
-  "success": true,
-  "message": "User registered successfully",
-  "token": "jwt_token",
-  "user": {
-    "id": "user_id",
-    "fullName": "John Doe",
-    "email": "john@example.com",
-    "phoneNo": "1234567890",
-    "role": "client"
-  }
-}
-```
+- **User Authentication**: Secure JWT-based authentication system
+- **Profile Management**: Complete user profile with employment and financial details
+- **Loan Management**: Comprehensive loan type and application management system
+- **Document Upload**: Secure document upload to AWS S3
+- **Role-based Access Control**: Different permissions for admin and client users
+- **Loan Categories**: Support for multiple loan categories and subcategories
 
-### Login
-- **URL**: `POST /api/auth/login`
-- **Description**: Authenticate user and get token
-- **Request Body**:
-```json
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
-- **Response**:
-```json
-{
-  "success": true,
-  "message": "Login successful",
-  "token": "jwt_token",
-  "user": {
-    "id": "user_id",
-    "fullName": "John Doe",
-    "email": "john@example.com",
-    "phoneNo": "1234567890",
-    "role": "client"
-  }
-}
+## Tech Stack
+
+- **Node.js**: JavaScript runtime environment
+- **Express.js**: Web framework for Node.js
+- **MongoDB**: NoSQL database
+- **Mongoose**: MongoDB object modeling
+- **JWT**: JSON Web Token for authentication
+- **Multer**: File upload middleware
+- **AWS SDK**: Integration with Amazon S3 for document storage
+- **Cors**: Cross-origin resource sharing
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd Elite-paisa-backend
 ```
 
-## Profile Management
-
-### Create Profile
-- **URL**: `POST /api/profile`
-- **Headers**: `Authorization: Bearer <token>`
-- **Description**: Create a new profile
-
-### Update Profile
-- **URL**: `PUT /api/profile`
-- **Headers**: `Authorization: Bearer <token>`
-- **Description**: Update existing profile
-- **Request Body**: Same as Create Profile
-- **Response**: Same as Create Profile
-
-### Delete Profile
-- **URL**: `DELETE /api/profile`
-- **Headers**: `Authorization: Bearer <token>`
-- **Description**: Delete user profile and associated profile picture from S3
-- **Response**:
-```json
-{
-  "success": true,
-  "message": "Profile deleted successfully"
-}
+2. Install dependencies:
+```bash
+npm install
 ```
-- **Request Body**:
+
+3. Set up environment variables (see below)
+
+4. Start the server:
+```bash
+npm start
+```
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/elite-paisa
+JWT_SECRET=your-jwt-secret-key
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+AWS_REGION=your-aws-region
+AWS_BUCKET_NAME=your-s3-bucket-name
+```
+
+## API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Login a user |
+| POST | `/api/auth/logout` | Logout a user |
+| POST | `/api/auth/forgot-password` | Request password reset |
+| POST | `/api/auth/reset-password/:resetToken` | Reset password |
+
+### Profile Management
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|---------|
+| POST | `/api/profile` | Create or update user profile | Private (Client/Admin) |
+| GET | `/api/profile` | Get user profile | Private (Client/Admin) |
+| PUT | `/api/profile` | Update user profile | Private (Client/Admin) |
+| DELETE | `/api/profile` | Delete user profile | Private (Client/Admin) |
+| POST | `/api/profile/upload/profile-pic` | Upload profile picture | Private (Client/Admin) |
+
+#### Profile Body Structure
+
 ```json
 {
   "fullName": "John Doe",
   "panNo": "ABCDE1234F",
   "adharNo": "123456789012",
-  "pincode": "123456",
-  "phoneNo": "1234567890",
-  "phoneNo2": "0987654321",
-  "email": "john@example.com",
-  "address": "123 Main Street, City",
+  "phoneNo": "9876543210",
+  "phoneNo2": "9123456789",
+  "email": "john.doe@example.com",
+  "address": {
+    "addressLine": "123 Main Street, Building A",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "pincode": "400001"
+  },
   "age": 30,
+  "employmentDetails": {
+    "employmentType": "salaried",
+    "companyName": "Tech Solutions Pvt Ltd",
+    "monthlyIncome": 75000,
+    "experience": 5
+  },
   "bankDetails": [
     {
       "bankName": "State Bank of India",
-      "accountNo": "1234567890",
+      "accountNo": "123456789012",
       "accountHolderName": "John Doe",
-      "bankBranch": "Main Branch",
+      "bankBranch": "Mumbai Central",
       "ifscCode": "SBIN0002499"
-    }
-  ],
-  "profilePic": "https://s3.amazonaws.com/bucket/elite-paisa/profile-pics/image.jpg"
-}
-```
-- **Response**:
-```json
-{
-  "success": true,
-  "message": "Profile created successfully",
-  "profile": {
-    "_id": "profile_id",
-    "authId": "user_id",
-    "fullName": "John Doe",
-    "panNo": "ABCDE1234F",
-    "adharNo": "123456789012",
-    "pincode": "123456",
-    "phoneNo": "1234567890",
-    "phoneNo2": "0987654321",
-    "email": "john@example.com",
-    "address": "123 Main Street, City",
-    "age": 30,
-    "bankDetails": [
-      {
-        "_id": "bank_details_id",
-        "bankName": "State Bank of India",
-        "accountNo": "1234567890",
-        "accountHolderName": "John Doe",
-        "bankBranch": "Main Branch",
-        "ifscCode": "SBIN0002499"
-      }
-    ],
-    "profilePic": "https://s3.amazonaws.com/bucket/elite-paisa/profile-pics/image.jpg",
-    "createdAt": "2023-01-01T00:00:00.000Z",
-    "updatedAt": "2023-01-01T00:00:00.000Z"
-  }
-}
-```
-
-### Get My Profile
-- **URL**: `GET /api/profile`
-- **Headers**: `Authorization: Bearer <token>`
-- **Description**: Get the authenticated user's profile
-- **Response**:
-```json
-{
-  "success": true,
-  "profile": {
-    "_id": "profile_id",
-    "authId": "user_id",
-    "fullName": "John Doe",
-    "panNo": "ABCDE1234F",
-    "adharNo": "123456789012",
-    "pincode": "123456",
-    "phoneNo": "1234567890",
-    "phoneNo2": "0987654321",
-    "email": "john@example.com",
-    "address": "123 Main Street, City",
-    "age": 30,
-    "bankDetails": [
-      {
-        "_id": "bank_details_id",
-        "bankName": "State Bank of India",
-        "accountNo": "1234567890",
-        "accountHolderName": "John Doe",
-        "bankBranch": "Main Branch",
-        "ifscCode": "SBIN0002499"
-      }
-    ],
-    "profilePic": "https://s3.amazonaws.com/bucket/elite-paisa/profile-pics/image.jpg",
-    "createdAt": "2023-01-01T00:00:00.000Z",
-    "updatedAt": "2023-01-01T00:00:00.000Z"
-  }
-}
-```
-
-### Upload Profile Picture
-- **URL**: `POST /api/profile/upload/profile-pic`
-- **Headers**: `Authorization: Bearer <token>`
-- **Form Data**: `profilePic` (file)
-- **Description**: Upload a profile picture to S3
-- **Response**:
-```json
-{
-  "success": true,
-  "message": "Profile picture uploaded successfully",
-  "data": {
-    "profilePic": "https://s3.amazonaws.com/bucket/elite-paisa/profile-pics/image.jpg"
-  }
-}
-```
-
-### Get All Profiles (Admin Only)
-- **URL**: `GET /api/profile/all`
-- **Headers**: `Authorization: Bearer <token>`
-- **Description**: Get all user profiles (admin only)
-- **Response**:
-```json
-{
-  "success": true,
-  "profiles": [
-    {
-      "_id": "profile_id",
-      "authId": "user_id",
-      "fullName": "John Doe",
-      "panNo": "ABCDE1234F",
-      "adharNo": "123456789012",
-      "pincode": "123456",
-      "phoneNo": "1234567890",
-      "phoneNo2": "0987654321",
-      "email": "john@example.com",
-      "address": "123 Main Street, City",
-      "age": 30,
-      "bankDetails": [],
-      "profilePic": "https://s3.amazonaws.com/bucket/elite-paisa/profile-pics/image.jpg",
-      "createdAt": "2023-01-01T00:00:00.000Z",
-      "updatedAt": "2023-01-01T00:00:00.000Z"
     }
   ]
 }
 ```
 
-### Get Specific User Profile (Admin Only)
-- **URL**: `GET /api/profile/:id`
-- **Headers**: `Authorization: Bearer <token>`
-- **Description**: Get a specific user's profile by ID (admin only)
-- **Response**:
+### Loan Types
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|---------|
+| POST | `/api/loan-types` | Create a new loan type | Private (Admin) |
+| GET | `/api/loan-types` | Get all loan types | Public |
+| GET | `/api/loan-types/:id` | Get loan type by ID | Public |
+| PUT | `/api/loan-types/:id` | Update loan type | Private (Admin) |
+| DELETE | `/api/loan-types/:id` | Delete loan type | Private (Admin) |
+
+#### Loan Type Body Structure
+
 ```json
 {
-  "success": true,
-  "profile": {
-    "_id": "profile_id",
-    "authId": "user_id",
-    "fullName": "John Doe",
-    "panNo": "ABCDE1234F",
-    "adharNo": "123456789012",
-    "pincode": "123456",
-    "phoneNo": "1234567890",
-    "phoneNo2": "0987654321",
-    "email": "john@example.com",
-    "address": "123 Main Street, City",
-    "age": 30,
-    "bankDetails": [],
-    "profilePic": "https://s3.amazonaws.com/bucket/elite-paisa/profile-pics/image.jpg",
-    "createdAt": "2023-01-01T00:00:00.000Z",
-    "updatedAt": "2023-01-01T00:00:00.000Z"
+  "loanName": "Personal Loan",
+  "loanCategory": "personal",
+  "loanSubcategory": "personal",
+  "minAmount": 50000,
+  "maxAmount": 2000000,
+  "interestRate": {
+    "min": 10.5,
+    "max": 18.0
+  },
+  "tenure": {
+    "minMonths": 6,
+    "maxMonths": 60
+  },
+  "processingFee": "2% + GST",
+  "eligibilityCriteria": "Min salary ₹25,000/month, Age 21-60 years",
+  "requiredDocuments": ["PAN Card", "Aadhaar Card", "Salary Slips", "Bank Statements"],
+  "status": "active"
+}
+```
+
+### Loan Applications
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|---------|
+| POST | `/api/loan-applications/apply` | Apply for a loan | Private (Client) |
+| GET | `/api/loan-applications/my` | Get my loan applications | Private (Client) |
+| GET | `/api/loan-applications` | Get all loan applications | Private (Admin) |
+| GET | `/api/loan-applications/:id` | Get loan application by ID | Private (Client/Admin) |
+| PATCH | `/api/loan-applications/:id/status` | Update application status | Private (Admin) |
+
+#### Loan Application Body Structure
+
+```json
+{
+  "loanTypeId": "6971b905f2f6fd809184fb4b",
+  "loanAmount": 500000,
+  "tenure": 24,
+  "purpose": "Home renovation",
+  "monthlyIncome": 60000,
+  "existingEMI": 15000,
+  "creditScore": 750,
+  "documents": {
+    "pan": "https://your-bucket.s3.amazonaws.com/elite-paisa/loan-documents/pan/filename.jpg",
+    "aadhaar": "https://your-bucket.s3.amazonaws.com/elite-paisa/loan-documents/aadhaar/filename.jpg",
+    "bankStatement": "https://your-bucket.s3.amazonaws.com/elite-paisa/loan-documents/bank-statement/filename.pdf",
+    "salarySlip": "https://your-bucket.s3.amazonaws.com/elite-paisa/loan-documents/salary-slip/filename.pdf"
   }
 }
 ```
 
-## Password Reset
+### Document Upload
 
-### Forgot Password (Send OTP)
-- **URL**: `POST /api/password/forgot-password`
-- **Description**: Request password reset OTP
-- **Request Body**:
-```json
-{
-  "email": "john@example.com"
-}
-```
-- **Response**:
-```json
-{
-  "success": true,
-  "message": "OTP sent to your email address"
-}
-```
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|---------|
+| POST | `/api/loan-applications/upload/pan` | Upload PAN document | Private (Client) |
+| POST | `/api/loan-applications/upload/aadhaar` | Upload Aadhaar document | Private (Client) |
+| POST | `/api/loan-applications/upload/bank-statement` | Upload bank statement | Private (Client) |
+| POST | `/api/loan-applications/upload/salary-slip` | Upload salary slip | Private (Client) |
+| POST | `/api/loan-applications/upload/property-document` | Upload property document | Private (Client) |
+| POST | `/api/loan-applications/upload/business-document` | Upload business document | Private (Client) |
 
-### Verify OTP
-- **URL**: `POST /api/password/verify-otp`
-- **Description**: Verify the OTP received via email
-- **Request Body**:
-```json
-{
-  "email": "john@example.com",
-  "otp": "123456"
-}
-```
-- **Response**:
-```json
-{
-  "success": true,
-  "message": "OTP verified successfully"
-}
+## API Usage Examples
+
+### Client Side Operations
+
+#### 1. Apply for a Loan
+
+First, upload required documents:
+
+```bash
+curl -X POST \
+  http://localhost:5000/api/loan-applications/upload/pan \
+  -H 'Authorization: Bearer <client-jwt-token>' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'document=@/path/to/pan-card.pdf'
 ```
 
-### Reset Password
-- **URL**: `POST /api/password/reset-password`
-- **Description**: Reset password after OTP verification
-- **Request Body**:
-```json
-{
-  "email": "john@example.com",
-  "otp": "123456",
-  "newPassword": "newPassword123",
-  "confirmPassword": "newPassword123"
-}
-```
-- **Response**:
-```json
-{
-  "success": true,
-  "message": "Password reset successfully"
-}
+Then apply for the loan:
+
+```bash
+curl -X POST \
+  http://localhost:5000/api/loan-applications/apply \
+  -H 'Authorization: Bearer <client-jwt-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "loanTypeId": "6971b905f2f6fd809184fb4b",
+    "loanAmount": 500000,
+    "tenure": 24,
+    "purpose": "Home renovation",
+    "monthlyIncome": 60000,
+    "existingEMI": 15000,
+    "creditScore": 750,
+    "documents": {
+      "pan": "https://your-bucket.s3.amazonaws.com/elite-paisa/loan-documents/pan/filename.jpg",
+      "aadhaar": "https://your-bucket.s3.amazonaws.com/elite-paisa/loan-documents/aadhaar/filename.jpg",
+      "bankStatement": "https://your-bucket.s3.amazonaws.com/elite-paisa/loan-documents/bank-statement/filename.pdf",
+      "salarySlip": "https://your-bucket.s3.amazonaws.com/elite-paisa/loan-documents/salary-slip/filename.pdf"
+    }
+  }'
 ```
 
-### Resend OTP
-- **URL**: `POST /api/password/resend-otp`
-- **Description**: Resend the password reset OTP
-- **Request Body**:
-```json
-{
-  "email": "john@example.com"
-}
-```
-- **Response**:
-```json
-{
-  "success": true,
-  "message": "OTP resent to your email address"
-}
+#### 2. Get My Loan Applications
+
+```bash
+curl -X GET \
+  http://localhost:5000/api/loan-applications/my \
+  -H 'Authorization: Bearer <client-jwt-token>'
 ```
 
-## Environment Variables
+### Admin Side Operations
 
-The application requires the following environment variables in a `.env` file:
+#### 1. Create a Loan Type
 
-```
-PORT=5000
-JWT_SECRET=your_jwt_secret_key
-MONGO_URI=your_mongodb_connection_string
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_REGION=your_aws_region
-AWS_BUCKET_NAME=your_s3_bucket_name
-ADMIN_EMAIL=your_admin_email
-ADMIN_PASSWORD=your_admin_password
-RESEND_API_KEY=your_resend_api_key
-RESEND_FROM_EMAIL=your_resend_from_email
-```
-
-## Error Handling
-
-### Common HTTP Status Codes
-- `200`: Success
-- `201`: Created
-- `400`: Bad Request
-- `401`: Unauthorized
-- `403`: Forbidden
-- `404`: Not Found
-- `500`: Internal Server Error
-
-### Error Response Format
-```json
-{
-  "success": false,
-  "message": "Error description",
-  "error": "Detailed error message (in development mode only)"
-}
+```bash
+curl -X POST \
+  http://localhost:5000/api/loan-types \
+  -H 'Authorization: Bearer <admin-jwt-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "loanName": "Home Construction Loan",
+    "loanCategory": "home", 
+    "loanSubcategory": "home-construction",
+    "minAmount": 500000,
+    "maxAmount": 5000000,
+    "interestRate": {"min": 8.5, "max": 12.0},
+    "tenure": {"minMonths": 120, "maxMonths": 360},
+    "processingFee": "0.5% + GST",
+    "eligibilityCriteria": "Property documents, Income proof",
+    "requiredDocuments": ["Property Papers", "PAN", "Aadhaar", "Income Certificate"],
+    "status": "active"
+  }'
 ```
 
-### Authentication Headers
-All protected routes require the following header:
+#### 2. Get All Loan Applications
+
+```bash
+curl -X GET \
+  http://localhost:5000/api/loan-applications \
+  -H 'Authorization: Bearer <admin-jwt-token>'
 ```
-Authorization: Bearer <jwt_token>
+
+#### 3. Update Loan Application Status
+
+```bash
+curl -X PATCH \
+  http://localhost:5000/api/loan-applications/6971b905f2f6fd809184fb4b/status \
+  -H 'Authorization: Bearer <admin-jwt-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "status": "approved",
+    "remarks": "All documents verified, credit score satisfactory"
+  }'
 ```
+
+## Supported Loan Categories and Subcategories
+
+### Personal Loans
+- Personal Loan
+- Instant Personal Loan
+- Short-Term Loan
+- Emergency Loan
+- Wedding Loan
+- Travel Loan
+- Medical Loan
+
+### Home & Property Loans
+- Home Loan
+- Home Construction Loan
+- Home Renovation Loan
+- Land / Plot Loan
+- Loan Against Property (LAP)
+
+### Vehicle Loans
+- Car Loan (New Car)
+- Used Car Loan
+- Two-Wheeler Loan
+- Commercial Vehicle Loan
+
+### Business Loans
+- Business Loan
+- Startup Loan
+- MSME / SME Loan
+- Working Capital Loan
+- Machinery Loan
+- Invoice / Bill Discounting
+- Merchant Cash Advance
+
+### Education Loans
+- Education Loan (India)
+- Education Loan (Abroad)
+- Skill Development Loan
+
+### Agriculture Loans
+- Crop Loan
+- Equipment / Tractor Loan
+- Irrigation Loan
+- Kisan Credit Card (KCC)
+
+### Gold & Secured Loans
+- Gold Loan
+- Fixed Deposit Loan
+- Loan Against Shares / Mutual Funds
+
+## License
+
+This project is licensed under the MIT License.

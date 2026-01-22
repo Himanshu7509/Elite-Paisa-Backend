@@ -57,12 +57,12 @@ export const createOrUpdateProfile = async (req, res) => {
       fullName,
       panNo,
       adharNo,
-      pincode,
       phoneNo,
       phoneNo2,
       email,
       address,
       age,
+      employmentDetails,
       bankDetails,
       profilePic
     } = req.body;
@@ -76,12 +76,12 @@ export const createOrUpdateProfile = async (req, res) => {
         fullName,
         panNo,
         adharNo,
-        pincode,
         phoneNo,
         phoneNo2,
         email,
         address,
         age,
+        employmentDetails,
         bankDetails
       };
       
@@ -111,12 +111,12 @@ export const createOrUpdateProfile = async (req, res) => {
         fullName,
         panNo,
         adharNo,
-        pincode,
         phoneNo,
         phoneNo2,
         email,
         address,
         age,
+        employmentDetails,
         bankDetails
       };
       
@@ -245,12 +245,12 @@ export const updateProfile = async (req, res) => {
       fullName,
       panNo,
       adharNo,
-      pincode,
       phoneNo,
       phoneNo2,
       email,
       address,
       age,
+      employmentDetails,
       bankDetails,
       profilePic
     } = req.body;
@@ -270,12 +270,12 @@ export const updateProfile = async (req, res) => {
       fullName,
       panNo,
       adharNo,
-      pincode,
       phoneNo,
       phoneNo2,
       email,
       address,
       age,
+      employmentDetails,
       bankDetails
     };
     

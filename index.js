@@ -5,6 +5,8 @@ import dbConnect from "./src/utils/mongodb.js";
 import authRoute from "./src/routes/auth.route.js";
 import profileRoute from "./src/routes/profile.route.js";
 import passwordRoute from "./src/routes/password.route.js";
+import loanTypeRoute from "./src/routes/loanType.route.js";
+import loanApplicationRoute from "./src/routes/loanApplication.route.js";
 
 dotenv.config()
 const app = express()
@@ -22,6 +24,8 @@ dbConnect();
 app.use("/api/auth", authRoute);
 app.use("/api/profile", profileRoute);
 app.use("/api/password", passwordRoute);
+app.use("/api/loan-types", loanTypeRoute);
+app.use("/api/loan-applications", loanApplicationRoute);
 
 app.get("/", (req, res) => {
   res.send("API is running...");
