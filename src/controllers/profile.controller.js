@@ -216,8 +216,13 @@ export const getUserProfileById = async (req, res) => {
       });
     }
     
-    // Admin can access any profile, client can access their own
-    const profile = await Profile.findOne({ authId: requestedId }).populate('authId', 'fullName email phoneNo role');
+    // Try to find profile by _id first (for admin access to specific profiles)
+    let profile = await Profile.findById(requestedId).populate('authId', 'fullName email phoneNo role');
+    
+    // If not found by _id, try by authId
+    if (!profile) {
+      profile = await Profile.findOne({ authId: requestedId }).populate('authId', 'fullName email phoneNo role');
+    }
 
     if (!profile) {
       return res.status(404).json({

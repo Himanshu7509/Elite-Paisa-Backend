@@ -3,27 +3,22 @@ import mongoose from "mongoose";
 const bankDetailsSchema = new mongoose.Schema({
   bankName: {
     type: String,
-    required: [true, "Bank name is required"],
     trim: true
   },
   accountNo: {
     type: String,
-    required: [true, "Account number is required"],
     trim: true
   },
   accountHolderName: {
     type: String,
-    required: [true, "Account holder name is required"],
     trim: true
   },
   bankBranch: {
     type: String,
-    required: [true, "Bank branch is required"],
     trim: true
   },
   ifscCode: {
     type: String,
-    required: [true, "IFSC code is required"],
     uppercase: true,
     match: [/^[A-Z]{4}0[A-Z0-9]{6}$/, "Please enter a valid IFSC code"]
   }
