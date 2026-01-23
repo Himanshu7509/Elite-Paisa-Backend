@@ -7,6 +7,7 @@ import profileRoute from "./src/routes/profile.route.js";
 import passwordRoute from "./src/routes/password.route.js";
 import loanTypeRoute from "./src/routes/loanType.route.js";
 import loanApplicationRoute from "./src/routes/loanApplication.route.js";
+import dashboardRoute from "./src/routes/dashboard.route.js";
 
 dotenv.config()
 const app = express()
@@ -26,6 +27,7 @@ app.use("/api/profile", profileRoute);
 app.use("/api/password", passwordRoute);
 app.use("/api/loan-types", loanTypeRoute);
 app.use("/api/loan-applications", loanApplicationRoute);
+app.use("/api/dashboard", dashboardRoute);
 
 app.get("/", (req, res) => {
   res.send("API is running...");
