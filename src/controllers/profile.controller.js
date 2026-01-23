@@ -318,12 +318,22 @@ export const updateProfile = async (req, res) => {
 };
 
 // @desc    Delete user profile
-// @route   DELETE /api/profile
+// @route   DELETE /api/profile/:id
 // @access  Private
 export const deleteProfile = async (req, res) => {
   try {
-    // Check if profile exists for this user
-    const profile = await Profile.findOne({ authId: req.user.id });
+    const profileId = req.params.id;
+    
+    // For clients, only allow deletion of their own profile
+    if (req.user.role === 'client' && profileId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. You can only delete your own profile."
+      });
+    }
+    
+    // Find the profile by authId (since we're storing authId in the profile)
+    const profile = await Profile.findOne({ authId: profileId });
     
     if (!profile) {
       return res.status(404).json({
@@ -338,7 +348,7 @@ export const deleteProfile = async (req, res) => {
     }
 
     // Delete the profile from database
-    await Profile.findOneAndDelete({ authId: req.user.id });
+    await Profile.findOneAndDelete({ authId: profileId });
 
     res.status(200).json({
       success: true,
