@@ -40,7 +40,6 @@ const profileSchema = new mongoose.Schema({
   },
   fullName: {
     type: String,
-    required: [true, "Full name is required"],
     trim: true
   },
   panNo: {
@@ -56,7 +55,6 @@ const profileSchema = new mongoose.Schema({
   },
   phoneNo: {
     type: String,
-    required: [true, "Primary phone number is required"],
     match: [/^\d{10}$/, "Please enter a valid 10-digit phone number"]
   },
   phoneNo2: {
@@ -65,7 +63,6 @@ const profileSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, "Email is required"],
     lowercase: true,
     trim: true,
     match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"]

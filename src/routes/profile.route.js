@@ -11,6 +11,7 @@ router.route("/upload/profile-pic").post(protect, upload.single('profilePic'), u
 
 // Admin routes
 router.route("/all").get(protect, adminOnly, getAllProfiles);
-router.route("/:id").get(protect, adminOnly, getUserProfileById);
+// Profile by ID - accessible by admin (any) or client (own only)
+router.route("/:id").get(protect, getUserProfileById);
 
 export default router;

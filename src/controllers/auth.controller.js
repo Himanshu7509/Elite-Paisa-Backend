@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Auth from "../models/auth.model.js";
+import Profile from "../models/profile.model.js";
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -50,35 +51,68 @@ export const signup = async (req, res) => {
       role: role || 'client'
     });
 
-    if (user) {
-      const token = generateToken(user._id);
-      
-      res.status(201).json({
-        success: true,
-        message: "User registered successfully",
-        token,
-        user: {
-          id: user._id,
-          fullName: user.fullName,
-          email: user.email,
-          phoneNo: user.phoneNo,
-          role: user.role
+    try {
+      const profileData = {
+        authId: user._id,
+        fullName,  // Populated from signup
+        email,     // Populated from signup
+        phoneNo,   // Populated from signup
+        panNo: 'AAAAA0000A', // Temporary placeholder
+        adharNo: '000000000000', // Temporary placeholder
+        address: {
+          addressLine: 'Temporary Address',
+          city: 'Not Specified',
+          state: 'Not Specified',
+          pincode: '000000'
         },
-      });
-    } else {
-      res.status(400).json({
+        age: 18, // Minimum valid age
+        employmentDetails: {
+          employmentType: 'salaried',
+          companyName: 'Not Specified',
+          monthlyIncome: 0,
+          experience: 0
+        }
+      };
+      
+      // Automatically create profile for the user with minimal required data
+      const profile = await Profile.create(profileData);
+      
+      if (user) {
+        const token = generateToken(user._id);
+        
+        res.status(201).json({
+          success: true,
+          message: "User registered successfully. Please update your profile with complete information.",
+          token,
+          user: {
+            id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            phoneNo: user.phoneNo,
+            role: user.role
+          },
+          profile: {
+            id: profile._id,
+            authId: profile.authId,
+            fullName: profile.fullName,
+            email: profile.email,
+            phoneNo: profile.phoneNo,
+            panNo: profile.panNo,
+            adharNo: profile.adharNo
+          }
+        });
+      }
+    } catch (profileError) {
+      // If profile creation fails, delete the user we just created
+      await Auth.findByIdAndDelete(user._id);
+      
+      return res.status(500).json({
         success: false,
-        message: "Invalid user data",
+        message: "User registration failed due to profile creation error",
+        error: profileError.message
       });
     }
   } catch (error) {
-    console.error('=== SIGNUP ERROR DEBUG ===');
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    console.error('Full error object:', error);
-    console.error('==========================');
-    
     res.status(500).json({
       success: false,
       message: "Server Error",

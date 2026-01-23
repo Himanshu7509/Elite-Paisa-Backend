@@ -153,7 +153,7 @@ export const getProfile = async (req, res) => {
     if (!profile) {
       return res.status(404).json({
         success: false,
-        message: "Profile not found",
+        message: "Profile not found"
       });
     }
 
@@ -162,7 +162,8 @@ export const getProfile = async (req, res) => {
       profile,
     });
   } catch (error) {
-    console.error(error);
+    console.error('=== PROFILE ERROR ===');
+    console.error('Error:', error);
     res.status(500).json({
       success: false,
       message: "Server Error",
@@ -202,18 +203,21 @@ export const getAllProfiles = async (req, res) => {
 
 // @desc    Get a specific user profile by ID
 // @route   GET /api/profile/:id
-// @access  Private/Admin
+// @access  Private (Admin can access any, Client can access own)
 export const getUserProfileById = async (req, res) => {
   try {
-    // Only admin can access other user profiles
-    if (req.user.role !== 'admin') {
+    const requestedId = req.params.id;
+    
+    // For clients, only allow access to their own profile
+    if (req.user.role === 'client' && requestedId !== req.user.id) {
       return res.status(403).json({
         success: false,
-        message: "Access denied. Admin rights required."
+        message: "Access denied. You can only access your own profile."
       });
     }
     
-    const profile = await Profile.findOne({ authId: req.params.id }).populate('authId', 'fullName email phoneNo role');
+    // Admin can access any profile, client can access their own
+    const profile = await Profile.findOne({ authId: requestedId }).populate('authId', 'fullName email phoneNo role');
 
     if (!profile) {
       return res.status(404).json({
