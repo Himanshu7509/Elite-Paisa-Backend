@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 
-import { createOrUpdateProfile, getProfile, getAllProfiles, getUserProfileById, updateProfile, deleteProfile, uploadProfilePic, upload } from "../controllers/profile.controller.js";
+import { createOrUpdateProfile, getProfile, getAllProfiles, getUserProfileById, updateProfile, updateAnyProfile, deleteProfile, uploadProfilePic, upload } from "../controllers/profile.controller.js";
 import { protect, adminOnly } from "../middleware/auth.middleware.js";
 
 router.route("/").post(protect, createOrUpdateProfile).get(protect, getProfile).put(protect, updateProfile);
