@@ -202,7 +202,7 @@ export const getAllProfiles = async (req, res) => {
 };
 
 // @desc    Get a specific user profile by ID
-// @route   GET /api/profile/:id
+// @route   GET /api/profile/detail/:id
 // @access  Private (Admin can access any, Client can access own)
 export const getUserProfileById = async (req, res) => {
   try {
@@ -245,7 +245,7 @@ export const getUserProfileById = async (req, res) => {
   }
 };
 
-// @desc    Update user profile
+// @desc    Update user profile (for own profile)
 // @route   PUT /api/profile
 // @access  Private
 export const updateProfile = async (req, res) => {
@@ -317,6 +317,109 @@ export const updateProfile = async (req, res) => {
   }
 };
 
+// @desc    Update any user profile (Admin only)
+// @route   PUT /api/profile/:id
+// @access  Private/Admin
+export const updateAnyProfile = async (req, res) => {
+  try {
+    const profileId = req.params.id;
+    const {
+      fullName,
+      panNo,
+      adharNo,
+      phoneNo,
+      phoneNo2,
+      email,
+      address,
+      age,
+      employmentDetails,
+      bankDetails,
+      profilePic
+    } = req.body;
+
+    // Only admin can update any profile
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Admin rights required."
+      });
+    }
+    
+    // Find profile by authId first
+    let profile = await Profile.findOne({ authId: profileId });
+    
+    // If not found by authId, try by profile _id
+    if (!profile) {
+      profile = await Profile.findById(profileId);
+      if (!profile) {
+        return res.status(404).json({
+          success: false,
+          message: "Profile not found"
+        });
+      }
+    }
+
+    // Prepare update data - only include fields that are provided
+    const updateData = { 
+      ...(fullName !== undefined && { fullName }),
+      ...(panNo !== undefined && { panNo }),
+      ...(adharNo !== undefined && { adharNo }),
+      ...(phoneNo !== undefined && { phoneNo }),
+      ...(phoneNo2 !== undefined && { phoneNo2 }),
+      ...(email !== undefined && { email }),
+      ...(address !== undefined && { address }),
+      ...(age !== undefined && { age }),
+      ...(employmentDetails !== undefined && { employmentDetails }),
+      ...(bankDetails !== undefined && { bankDetails })
+    };
+    
+    // Add profilePic if provided
+    if (profilePic) {
+      // If changing profile pic, delete the old one from S3 if it exists
+      if (profile.profilePic) {
+        await deleteImageFromS3(profile.profilePic);
+      }
+      updateData.profilePic = profilePic;
+    }
+    
+    let updatedProfile;
+    if (profile.authId) {
+      // Update by authId
+      updatedProfile = await Profile.findOneAndUpdate(
+        { authId: profileId },
+        updateData,
+        {
+          new: true,
+          runValidators: true
+        }
+      ).populate('authId', 'fullName email phoneNo role');
+    } else {
+      // Update by profile _id
+      updatedProfile = await Profile.findByIdAndUpdate(
+        profileId,
+        updateData,
+        {
+          new: true,
+          runValidators: true
+        }
+      ).populate('authId', 'fullName email phoneNo role');
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      profile: updatedProfile,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
 // @desc    Delete user profile
 // @route   DELETE /api/profile/:id
 // @access  Private
@@ -324,16 +427,35 @@ export const deleteProfile = async (req, res) => {
   try {
     const profileId = req.params.id;
     
-    // For clients, only allow deletion of their own profile
-    if (req.user.role === 'client' && profileId !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. You can only delete your own profile."
+    // First, try to find by profile _id
+    let profile = await Profile.findById(profileId);
+    
+    if (profile) {
+      // Profile found by _id, check authorization
+      if (req.user.role === 'client' && profile.authId.toString() !== req.user.id) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied. You can only delete your own profile."
+        });
+      }
+      
+      // Delete profile picture from S3 if it exists
+      if (profile.profilePic) {
+        await deleteImageFromS3(profile.profilePic);
+      }
+      
+      // Delete the profile from database
+      await Profile.findByIdAndDelete(profileId);
+      
+      res.status(200).json({
+        success: true,
+        message: "Profile deleted successfully"
       });
+      return;
     }
     
-    // Find the profile by authId (since we're storing authId in the profile)
-    const profile = await Profile.findOne({ authId: profileId });
+    // If not found by _id, try by authId
+    profile = await Profile.findOne({ authId: profileId });
     
     if (!profile) {
       return res.status(404).json({
@@ -341,7 +463,15 @@ export const deleteProfile = async (req, res) => {
         message: "Profile not found"
       });
     }
-
+    
+    // Check authorization when found by authId
+    if (req.user.role === 'client' && profileId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. You can only delete your own profile."
+      });
+    }
+    
     // Delete profile picture from S3 if it exists
     if (profile.profilePic) {
       await deleteImageFromS3(profile.profilePic);

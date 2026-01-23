@@ -5,6 +5,7 @@ import { createOrUpdateProfile, getProfile, getAllProfiles, getUserProfileById, 
 import { protect, adminOnly } from "../middleware/auth.middleware.js";
 
 router.route("/").post(protect, createOrUpdateProfile).get(protect, getProfile).put(protect, updateProfile);
+router.route("/:id").put(protect, adminOnly, updateAnyProfile);
 router.route("/:id").delete(protect, deleteProfile);
 
 // Profile picture upload route
@@ -12,6 +13,6 @@ router.route("/upload/profile-pic").post(protect, upload.single('profilePic'), u
 
 // Admin routes
 router.route("/all").get(protect, adminOnly, getAllProfiles);
-router.route("/:id").get(protect, getUserProfileById);
+router.route("/detail/:id").get(protect, getUserProfileById);
 
 export default router;
