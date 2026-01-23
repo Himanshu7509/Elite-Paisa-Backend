@@ -57,21 +57,7 @@ export const signup = async (req, res) => {
         fullName,  // Populated from signup
         email,     // Populated from signup
         phoneNo,   // Populated from signup
-        panNo: 'AAAAA0000A', // Temporary placeholder
-        adharNo: '000000000000', // Temporary placeholder
-        address: {
-          addressLine: 'Temporary Address',
-          city: 'Not Specified',
-          state: 'Not Specified',
-          pincode: '000000'
-        },
-        age: 18, // Minimum valid age
-        employmentDetails: {
-          employmentType: 'salaried',
-          companyName: 'Not Specified',
-          monthlyIncome: 0,
-          experience: 0
-        }
+        // All other fields are optional, only include the signup data
       };
       
       // Automatically create profile for the user with minimal required data

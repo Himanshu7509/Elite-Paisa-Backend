@@ -71,18 +71,18 @@ export const createOrUpdateProfile = async (req, res) => {
     let profile = await Profile.findOne({ authId: req.user.id });
 
     if (profile) {
-      // Update existing profile
+      // Update existing profile - only include fields that are provided
       const updateData = { 
-        fullName,
-        panNo,
-        adharNo,
-        phoneNo,
-        phoneNo2,
-        email,
-        address,
-        age,
-        employmentDetails,
-        bankDetails
+        ...(fullName !== undefined && { fullName }),
+        ...(panNo !== undefined && { panNo }),
+        ...(adharNo !== undefined && { adharNo }),
+        ...(phoneNo !== undefined && { phoneNo }),
+        ...(phoneNo2 !== undefined && { phoneNo2 }),
+        ...(email !== undefined && { email }),
+        ...(address !== undefined && { address }),
+        ...(age !== undefined && { age }),
+        ...(employmentDetails !== undefined && { employmentDetails }),
+        ...(bankDetails !== undefined && { bankDetails })
       };
       
       // Add profilePic if provided
@@ -105,19 +105,19 @@ export const createOrUpdateProfile = async (req, res) => {
         profile,
       });
     } else {
-      // Create new profile
+      // Create new profile - only include fields that are provided
       const profileData = {
         authId: req.user.id,
-        fullName,
-        panNo,
-        adharNo,
-        phoneNo,
-        phoneNo2,
-        email,
-        address,
-        age,
-        employmentDetails,
-        bankDetails
+        ...(fullName !== undefined && { fullName }),
+        ...(panNo !== undefined && { panNo }),
+        ...(adharNo !== undefined && { adharNo }),
+        ...(phoneNo !== undefined && { phoneNo }),
+        ...(phoneNo2 !== undefined && { phoneNo2 }),
+        ...(email !== undefined && { email }),
+        ...(address !== undefined && { address }),
+        ...(age !== undefined && { age }),
+        ...(employmentDetails !== undefined && { employmentDetails }),
+        ...(bankDetails !== undefined && { bankDetails })
       };
       
       // Add profilePic if provided
@@ -269,18 +269,18 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    // Prepare update data
+    // Prepare update data - only include fields that are provided
     const updateData = { 
-      fullName,
-      panNo,
-      adharNo,
-      phoneNo,
-      phoneNo2,
-      email,
-      address,
-      age,
-      employmentDetails,
-      bankDetails
+      ...(fullName !== undefined && { fullName }),
+      ...(panNo !== undefined && { panNo }),
+      ...(adharNo !== undefined && { adharNo }),
+      ...(phoneNo !== undefined && { phoneNo }),
+      ...(phoneNo2 !== undefined && { phoneNo2 }),
+      ...(email !== undefined && { email }),
+      ...(address !== undefined && { address }),
+      ...(age !== undefined && { age }),
+      ...(employmentDetails !== undefined && { employmentDetails }),
+      ...(bankDetails !== undefined && { bankDetails })
     };
     
     // Add profilePic if provided
