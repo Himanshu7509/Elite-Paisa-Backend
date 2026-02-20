@@ -24,6 +24,7 @@ const allowedOrigins = [
   'https://www.elitepaisa.com',
   'https://elitepaisa.com',
   'https://elite-paisa-crm.vercel.app',
+  'https://admin.elitepaisa.com'
 
 ];
 
