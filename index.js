@@ -11,12 +11,37 @@ import dashboardRoute from "./src/routes/dashboard.route.js";
 
 dotenv.config()
 const app = express()
-app.use(cors({
-  origin: "*", // Allow access from any origin
-  credentials: true, // Enable credentials if needed
-}));
-app.use(express.json({ limit: "30mb", extended: true }));
-app.use(express.urlencoded({ limit: "30mb", extended: true }));
+app.set('trust proxy', 1);
+
+/* ===============================
+   CORS (VERY IMPORTANT)
+================================ */
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174',
+  'https://www.elitepaisa.com',
+  'https://elitepaisa.com',
+  'https://elite-paisa-crm.vercel.app',
+
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+);
 
 
 dbConnect();
